@@ -1,595 +1,417 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>WinXX — Tournament App</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-  body { font-family: 'Poppins', sans-serif; background: linear-gradient(180deg,#07060a,#0b0410); }
-  .neon { color: #c084fc; text-shadow: 0 0 8px rgba(192,132,252,0.25); }
-  .card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border: 1px solid rgba(200,140,252,0.07); }
-  .small-muted { color: #9ca3af; font-size: 0.9rem; }
-  .hidden { display:none !important; }
-  .loader { border:6px solid rgba(255,255,255,0.06); border-top:6px solid #7c3aed; border-radius:50%; width:48px; height:48px; animation:spin 1s linear infinite;}
-  @keyframes spin { to { transform: rotate(360deg); } }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKOOLMATE - teacher</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FIREBASE SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+    <style>
+        :root { --bg-color: #f0f2f5; --card-bg: #ffffff; --primary: #2c3e50; --accent: #4a90e2; --danger: #e74c3c; --success: #2ecc71; --text-main: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); margin: 0; padding-bottom: 60px; color: var(--text-main); user-select: none; }
+        /* --- LOGO STYLE --- */
+.school-logo {
+    display: block;
+    margin: 0 auto 15px auto; /* Centers the logo */
+    max-width: 200px;         /* Max width limit */
+    width: 100%;              /* Responsive */
+    height: auto;
+}
+        /* LOGIN SCREEN */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .login-box { width: 85%; max-width: 350px; text-align: center; }
+        .login-icon { font-size: 50px; color: var(--accent); margin-bottom: 20px; }
+        
+        /* HEADER */
+        .header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .h-title { font-weight: 800; font-size: 20px; color: var(--primary); }
+        .h-sub { font-size: 11px; color: var(--accent); font-weight: bold; text-transform: uppercase; }
+
+        /* GRID */
+        .admin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; }
+        .admin-card { background: var(--card-bg); border-radius: 18px; padding: 20px 10px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; }
+        .admin-card:active { transform: scale(0.96); }
+        .icon-box { width: 50px; height: 50px; border-radius: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; color: white; }
+        .card-name { font-size: 12px; font-weight: 700; color: #444; }
+
+        /* SCREENS */
+        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f6f9; z-index: 1500; transform: translateX(100%); transition: transform 0.3s; overflow-y: auto; }
+        .screen.active { transform: translateX(0); }
+        .fs-header { background: #fff; padding: 15px; display: flex; align-items: center; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .fs-title { font-size: 18px; font-weight: bold; margin-left: 15px; flex: 1; }
+
+        /* FORMS */
+        .form-section { background: white; padding: 20px; margin: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .label { font-size: 12px; font-weight: bold; color: #666; display: block; margin-bottom: 5px; }
+        .input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; outline: none; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .btn-primary { background: var(--accent); color: white; }
+        .manage-item { background: white; padding: 12px; margin: 10px 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 4px solid var(--accent); }
+        
+        .flex-row { display: flex; gap: 10px; } .flex-col { flex: 1; }
+        
+        /* Profile View */
+        .profile-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee; }
+        .p-lbl { font-weight:bold; color:#666; font-size:13px; }
+        .p-val { color:#333; font-weight:bold; font-size:13px; }
+    </style>
 </head>
-<body class="text-white">
+<body>
 
-<!-- Loader -->
-<div id="loader" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-  <div class="loader"></div>
-</div>
+    <!-- 1. LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="login-box">
+        <!-- SCHOOL LOGO -->
 
-<!-- AUTH (login/signup) -->
-<div id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-6">
-  <div class="w-full max-w-md card rounded-2xl p-8 shadow-lg">
-    <div class="text-center mb-4">
-      <h1 class="text-4xl font-bold neon">WinXX</h1>
-      <p class="small-muted">Your Gateway to Gaming Glory</p>
-    </div>
-    <div id="login-box">
-      <h2 class="text-2xl font-semibold mb-4">Login</h2>
-      <form id="login-form" class="space-y-3">
-        <input id="login-email" type="email" placeholder="Email" required class="w-full p-3 rounded-lg text-gray-900" />
-        <input id="login-password" type="password" placeholder="Password" required class="w-full p-3 rounded-lg text-gray-900" />
-        <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold">Login</button>
-      </form>
-      <p class="mt-3 small-muted text-center">Naye user? <a href="#" id="show-signup" class="text-violet-300">Sign up</a></p>
-    </div>
-    <div id="signup-box" class="hidden">
-      <h2 class="text-2xl font-semibold mb-4">Sign Up</h2>
-      <form id="signup-form" class="space-y-3">
-        <input id="signup-email" type="email" placeholder="Email" required class="w-full p-3 rounded-lg text-gray-900" />
-        <input id="signup-password" type="password" placeholder="Password (6+ characters)" required class="w-full p-3 rounded-lg text-gray-900" />
-        <button type="submit" class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold">Create Account</button>
-      </form>
-      <p class="mt-3 small-muted text-center">Pehle se account? <a href="#" id="show-login" class="text-violet-300">Login</a></p>
-    </div>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="app-screen" class="hidden min-h-screen flex flex-col">
-  <header class="flex items-center justify-between px-6 py-4 bg-black bg-opacity-30 border-b border-purple-900 sticky top-0 z-30">
-    <div class="flex items-center gap-4"> <h1 class="text-2xl font-bold neon">WinXX</h1> </div>
-    <div class="flex items-center gap-3">
-      <div class="text-right small-muted mr-4 hidden md:block">
-        <div id="user-email" class="font-medium"></div>
-        <div id="wallet-tiny" class="text-sm">₹0.00</div>
-      </div>
-      <button id="logout-btn" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-sm">Logout</button>
-    </div>
-  </header>
-  <main class="flex-1 p-6">
-    <div class="max-w-6xl mx-auto">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <section class="md:col-span-1">
-                <div class="card p-5 rounded-xl mb-6">
-                <h3 class="text-lg font-semibold text-violet-300">My Wallet</h3>
-                <div class="mt-3">
-                    <div class="text-4xl font-bold text-green-400">₹<span id="wallet-balance">0.00</span></div>
-                    <div class="mt-4 grid grid-cols-3 gap-2">
-                    <button id="btn-add" class="py-2 px-2 bg-green-500 hover:bg-green-600 rounded-lg text-black font-semibold">Add</button>
-                    <button id="btn-withdraw" class="py-2 px-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-black font-semibold">Withdraw</button>
-                    <button id="btn-history" class="py-2 px-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-black font-semibold">History</button>
-                    </div>
-                </div>
-                </div>
-                <div class="card p-5 rounded-xl">
-                <h3 class="text-lg font-semibold text-violet-300">Quick Actions</h3>
-                <div class="mt-4 space-y-3">
-                    <button id="quick-join" class="w-full py-3 bg-violet-600 hover:bg-violet-700 rounded-lg">Browse Tournaments</button>
-                </div>
-                </div>
-            </section>
-            <section class="md:col-span-2">
-                <div class="card p-5 rounded-xl">
-                <h2 class="text-2xl font-bold text-violet-300">Upcoming Tournaments</h2>
-                <div id="tournaments-list" class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-                </div>
-                <div id="tournament-detail" class="card p-5 rounded-xl mt-6 hidden"></div>
-            </section>
-        </div>
-
-        <!-- Policies and Terms Section -->
-        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="card p-5 rounded-xl">
-                <h2 class="text-2xl font-bold text-violet-300 mb-4">Privacy Policy</h2>
-                <div class="space-y-3 small-muted">
-                    <p>Winxx Tournament App respects your privacy. We collect basic user details such as name, email, and UPI ID only for verification and payment purposes. All uploaded screenshots, transactions, and personal data are securely stored on Firebase and are not shared with any third party. Users are advised not to share their login details with anyone. We ensure fair use of data and maintain complete transparency in wallet and tournament activities.</p>
-                </div>
+<img src="https://i.ibb.co/xSYJ7V1g/1769350192874.png" class="school-logo" alt="School Logo" style="width:200px; display:block; margin: 0 auto 15px auto;">            <i class="fa-solid fa-chalkboard-user login-icon"></i>
+            <h2 style="color:var(--primary); margin:0;">Teacher Portal</h2>
+            <p style="color:#777; font-size:13px; margin-bottom:30px;">Login to manage classes</p>
+            
+            <div class="form-group">
+                <input type="email" id="login_email" class="input" placeholder="Teacher Email">
             </div>
-            <div class="card p-5 rounded-xl">
-                <h2 class="text-2xl font-bold text-violet-300 mb-4">Terms & Conditions</h2>
-                <div class="space-y-3 small-muted">
-                   <ol class="list-decimal list-inside space-y-2">
-                        <li>By using this app, you agree to follow all fair play and honesty rules.</li>
-                        <li>Entry fees paid for tournaments are non-refundable once the slot is confirmed.</li>
-                        <li>Fake or edited screenshots will result in account suspension and wallet freeze.</li>
-                        <li>Winning rewards are verified and credited to the winner’s UPI within 24–48 hours.</li>
-                        <li>The app is meant for skill-based tournaments only (no gambling or betting).</li>
-                        <li>Any misuse, fraud, or illegal activity will lead to permanent ban and possible legal action.</li>
-                        <li>The admin’s decision in case of disputes is final.</li>
-                   </ol>
-                </div>
+            <div class="form-group">
+                <input type="password" id="login_pass" class="input" placeholder="Password">
             </div>
+            
+            <button class="btn btn-primary" onclick="handleLogin()">Secure Login</button>
+            <p id="login_msg" style="color:red; font-size:12px; margin-top:15px;"></p>
         </div>
     </div>
-  </main>
-</div>
 
-<!-- Modal -->
-<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-40 p-4">
-  <div id="modal-box" class="bg-gray-800 border border-purple-900 p-6 rounded-xl w-11/12 max-w-lg text-white relative max-h-[90vh] overflow-y-auto">
-    <button id="modal-close-btn" class="absolute top-3 right-4 text-2xl text-gray-400 hover:text-white">&times;</button>
-    <div id="modal-content"></div>
-  </div>
-</div>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, collection, doc, setDoc, onSnapshot, addDoc, updateDoc, runTransaction, query, where, orderBy, getDocs, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-  // ===================================================================
-  // PASO 1: PEGA AQUÍ LOS DATOS DE TU FIREBASE
-  // (¡MUY IMPORTANTE! La aplicación no funcionará sin esto)
-  // ===================================================================
-  const firebaseConfig = {
-  apiKey: "AIzaSyDf00dl8bQSORSFqH4xiRdT3Uzeme1RWeI",
-  authDomain: "tournament-d7997.firebaseapp.com",
-  databaseURL: "https://tournament-d7997-default-rtdb.firebaseio.com",
-  projectId: "tournament-d7997",
-  storageBucket: "tournament-d7997.firebasestorage.app",
-  messagingSenderId: "1066933503283",
-  appId: "1:1066933503283:web:df9a753f569ddec74dea46"
-};
-  // ===================================================================
-
-  // ===================================================================
-  // PASO 2: ACTUALIZA AQUÍ TU ID DE UPI Y LA URL DEL CÓDIGO QR
-  // ===================================================================
-  const ADMIN_UPI_ID = "scan code and pay to @winxx99"; // <-- INGRESA AQUÍ TU ID DE UPI
-  const ADMIN_QR_CODE_URL = "https://i.ibb.co/gMf9Gd0c/IMG-20251026-163206.jpg"; // <-- INGRESA AQUÍ LA URL DIRECTA DE LA IMAGEN DE TU CÓDIGO QR
-  // ===================================================================
-
-  let app, auth, db;
-  
-  try {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-  } catch (error) {
-    console.error("Firebase initialization failed:", error);
-    alert("Error: No se pudo conectar a la base de datos. Comprueba la configuración de Firebase.");
-    // Oculta el cargador incluso si falla la inicialización para que la página no se quede bloqueada.
-    document.getElementById('loader').classList.add('hidden');
-    document.getElementById('auth-screen').classList.remove('hidden');
-  }
-
-
-  const loader = document.getElementById('loader');
-  const authScreen = document.getElementById('auth-screen');
-  const appScreen = document.getElementById('app-screen');
-  const loginBox = document.getElementById('login-box');
-  const signupBox = document.getElementById('signup-box');
-  const tournamentsList = document.getElementById('tournaments-list');
-  const tournamentDetailEl = document.getElementById('tournament-detail');
-  const userEmailEl = document.getElementById('user-email');
-  const walletBalanceEl = document.getElementById('wallet-balance');
-  const walletTiny = document.getElementById('wallet-tiny');
-  const modal = document.getElementById('modal');
-  const modalContent = document.getElementById('modal-content');
-
-  let currentUser = null;
-  let unsubscribeUserWallet = null;
-
-  function showLoader() { loader.classList.remove('hidden'); }
-  function hideLoader() { loader.classList.add('hidden'); }
-  function showModal(html) { modalContent.innerHTML = html; modal.classList.remove('hidden'); }
-  function closeModal() { modal.classList.add('hidden'); }
-
-  document.getElementById('show-signup').addEventListener('click', (e) => { e.preventDefault(); loginBox.classList.add('hidden'); signupBox.classList.remove('hidden'); });
-  document.getElementById('show-login').addEventListener('click', (e) => { e.preventDefault(); signupBox.classList.add('hidden'); loginBox.classList.remove('hidden'); });
-
-  document.getElementById('signup-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value;
-    showLoader();
-    try {
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, 'users', cred.user.uid), { email, wallet: 10.00, createdAt: serverTimestamp() });
-      alert('Account created! ₹10 signup bonus added.');
-    } catch (err) { alert(`Signup Error: ${err.message}`); } finally { hideLoader(); }
-  });
-
-  document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value;
-    showLoader();
-    try { await signInWithEmailAndPassword(auth, email, password); } 
-    catch (err) { alert(`Login Error: ${err.message}`); } finally { hideLoader(); }
-  });
-
-  onAuthStateChanged(auth, (user) => {
-    if (unsubscribeUserWallet) unsubscribeUserWallet();
-    if (user) {
-      currentUser = user;
-      authScreen.classList.add('hidden'); appScreen.classList.remove('hidden');
-      userEmailEl.textContent = user.email;
-      const userDocRef = doc(db, 'users', user.uid);
-      unsubscribeUserWallet = onSnapshot(userDocRef, (docSnap) => {
-        const balance = docSnap.exists() ? (docSnap.data().wallet || 0) : 0;
-        walletBalanceEl.textContent = balance.toFixed(2);
-        walletTiny.textContent = `₹${balance.toFixed(2)}`;
-      });
-      loadTournaments();
-    } else {
-      currentUser = null;
-      authScreen.classList.remove('hidden'); appScreen.classList.add('hidden');
-    }
-    hideLoader();
-  });
-
-  document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
-
-  function loadTournaments() {
-    const q = query(collection(db, 'tournaments'), orderBy('createdAt', 'desc'));
-    onSnapshot(q, (snap) => {
-      tournamentsList.innerHTML = '';
-      if (snap.empty) { tournamentsList.innerHTML = '<p class="small-muted col-span-full">No tournaments available right now.</p>'; return; }
-      snap.forEach(docSnap => {
-        const t = docSnap.data(); const id = docSnap.id;
-        const card = document.createElement('div');
-        card.className = 'p-4 rounded-xl card cursor-pointer hover:border-purple-500 transition-all';
-        card.innerHTML = `
-          <h3 class="text-lg font-bold neon">${t.gameName || 'Tournament'}</h3>
-          <div class="mt-3 flex items-center justify-between">
-            <div class="small-muted">Entry: <span class="font-bold text-yellow-400">₹${t.entryFee || 0}</span></div>
-            <div class="small-muted">Prize: <span class="font-bold text-green-400">₹${t.prizePool || 0}</span></div>
-          </div>`;
-        card.addEventListener('click', () => showTournamentDetail(id));
-        tournamentsList.appendChild(card);
-      });
-    });
-  }
-  
-  async function showTournamentDetail(tournamentId) {
-    showLoader();
-    try {
-        const tDoc = await getDoc(doc(db, 'tournaments', tournamentId));
-        if (!tDoc.exists()) throw new Error('Tournament not found');
+    <!-- 2. MAIN APP (Hidden until login) -->
+    <div id="main-app" style="display: none;">
         
-        const t = tDoc.data();
-        const joinedUsers = t.joinedUsers || [];
-        const hasJoined = currentUser && joinedUsers.includes(currentUser.uid);
-
-        let actionButtonHtml = '';
-        if (hasJoined) {
-            actionButtonHtml = `<button id="detail-btn-upload" class="py-3 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg">Upload Score</button>`;
-        } else {
-            actionButtonHtml = `<button id="detail-btn-join" class="py-3 px-4 bg-violet-600 hover:bg-violet-700 rounded-lg">Join Tournament</button>`;
-        }
-
-        const leaderboardDoc = await getDoc(doc(db, "leaderboards", tournamentId));
-        const leaderboardData = leaderboardDoc.exists() 
-            ? leaderboardDoc.data().data.replace(/\n/g, '<br>') 
-            : '<p class="small-muted">Leaderboard not set yet.</p>';
-
-        tournamentDetailEl.innerHTML = `
-            <div class="flex justify-between items-center">
-                <div><h3 class="text-xl font-bold neon">${t.gameName}</h3></div>
-                <div>
-                    <div class="text-right small-muted">Entry</div>
-                    <div class="text-2xl font-bold text-yellow-400">₹${t.entryFee}</div>
-                </div>
+        <!-- HEADER -->
+        <div class="header">
+            <div>
+                <div class="h-title">Teacher Panel</div>
+                <div class="h-sub" id="teacher_info">Fetching details...</div>
             </div>
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="md:col-span-2">
-                    <h4 class="text-md font-semibold text-violet-300">Description</h4>
-                    <p class="small-muted">${t.description || 'Play, upload score, and win.'}</p>
-                    <div class="mt-4 flex gap-3">
-                        ${actionButtonHtml}
-                    </div>
-                </div>
-                <div>
-                    <h4 class="text-md font-semibold text-violet-300">Leaderboard</h4>
-                    <div class="mt-3 space-y-2 max-h-60 overflow-y-auto">${leaderboardData}</div>
-                </div>
+            <i class="fa-solid fa-right-from-bracket" style="color: var(--danger); font-size: 20px; cursor: pointer;" onclick="logout()"></i>
+        </div>
+
+        <!-- MAIN GRID -->
+        <div class="admin-grid">
+            <div class="admin-card" onclick="openScreen('homeworkScreen')">
+                <div class="icon-box" style="background: #4facfe;"><i class="fa-solid fa-book-open"></i></div>
+                <div class="card-name">Upload Homework</div>
             </div>
-        `;
-        tournamentDetailEl.classList.remove('hidden');
-        tournamentDetailEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            <div class="admin-card" onclick="openScreen('noticeScreen')">
+                <div class="icon-box" style="background: #f6d365;"><i class="fa-solid fa-bullhorn"></i></div>
+                <div class="card-name">Class Notice</div>
+            </div>
+            <div class="admin-card" onclick="openScreen('leaveScreen')">
+                <div class="icon-box" style="background: #ff758c;"><i class="fa-solid fa-bell"></i></div>
+                <div class="card-name">Student Leaves</div>
+            </div>
+            <div class="admin-card" onclick="openScreen('profileScreen')">
+                <div class="icon-box" style="background: #868f96;"><i class="fa-solid fa-user"></i></div>
+                <div class="card-name">My Profile</div>
+            </div>
+        </div>
+
+        <!-- SCREENS -->
         
-        if (hasJoined) {
-            document.getElementById('detail-btn-upload').onclick = () => openUploadDialog(tournamentId, t.gameName);
-        } else {
-            document.getElementById('detail-btn-join').onclick = () => handleJoin(tournamentId, t.entryFee, t.gameName);
-        }
-
-    } catch (err) { alert(`Error: ${err.message}`); } 
-    finally { hideLoader(); }
-  }
-
-  // ===================================================================
-  // SECCIÓN ACTUALIZADA: Se reemplazó confirm() por un pop-up modal personalizado
-  // ===================================================================
-  function handleJoin(tournamentId, entryFee, tournamentName) {
-    if (!currentUser) return alert('Please login first.');
-
-    const confirmationHtml = `
-      <h3 class="text-xl font-bold neon mb-4">Confirm Join</h3>
-      <p class="small-muted mb-6">Are you sure you want to join the '${tournamentName}' tournament for <span class="font-bold text-yellow-400">₹${entryFee}</span>? This amount will be deducted from your wallet and is non-refundable.</p>
-      <div class="flex justify-end gap-4">
-          <button id="confirm-cancel-btn" class="py-2 px-5 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold">Cancel</button>
-          <button id="confirm-join-btn" class="py-2 px-5 bg-violet-600 hover:bg-violet-700 rounded-lg font-semibold">Confirm Join</button>
-      </div>
-    `;
-    showModal(confirmationHtml);
-
-    document.getElementById('confirm-cancel-btn').onclick = () => closeModal();
-    
-    document.getElementById('confirm-join-btn').onclick = async () => {
-        closeModal();
-        showLoader();
-        try {
-            const userRef = doc(db, 'users', currentUser.uid);
-            const tournamentRef = doc(db, 'tournaments', tournamentId);
-            
-            await runTransaction(db, async (tx) => {
-                const userDoc = await tx.get(userRef);
-                const tDoc = await tx.get(tournamentRef);
-                if (!userDoc.exists() || !tDoc.exists()) throw new Error("Data not found.");
+        <!-- PROFILE SCREEN (NEW) -->
+        <div id="profileScreen" class="screen">
+            <div class="fs-header"><i class="fa-solid fa-arrow-left" onclick="closeScreen('profileScreen')" style="padding:10px;"></i><span class="fs-title">My Profile</span></div>
+            <div class="form-section" style="text-align:center;">
+                <div style="width:80px; height:80px; background:#eee; border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; font-size:30px; color:#888;">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <h3 id="p_name" style="margin:0; color:var(--primary);">Loading...</h3>
+                <p id="p_sub" style="margin:5px 0 20px; color:var(--accent);">...</p>
                 
-                const balance = userDoc.data().wallet || 0;
-                if (balance < entryFee) throw new Error("Insufficient balance.");
-                
-                const joined = tDoc.data().joinedUsers || [];
-                if (joined.includes(currentUser.uid)) throw new Error("You have already joined.");
-                
-                tx.update(userRef, { wallet: balance - entryFee });
-                tx.update(tournamentRef, { joinedUsers: [...joined, currentUser.uid] });
-            });
-            
-            alert('Joined successfully!');
+                <div style="text-align:left;">
+                    <div class="profile-row"><span class="p-lbl">Email</span><span class="p-val" id="p_email">-</span></div>
+                    <div class="profile-row"><span class="p-lbl">Mobile</span><span class="p-val" id="p_mob">-</span></div>
+                    <div class="profile-row"><span class="p-lbl">DOB</span><span class="p-val" id="p_dob">-</span></div>
+                    <div class="profile-row"><span class="p-lbl">Address</span><span class="p-val" id="p_addr">-</span></div>
+                    <div class="profile-row"><span class="p-lbl">Aadhaar</span><span class="p-val" id="p_aadhaar">-</span></div>
+                </div>
+                <p style="font-size:11px; color:red; margin-top:20px;">* To update details, please contact Admin.</p>
+            </div>
+        </div>
 
-            // --- Actualiza instantáneamente el botón de "Join" a "Upload" ---
-            const joinButton = document.getElementById('detail-btn-join');
-            if (joinButton) {
-                const uploadButton = document.createElement('button');
-                uploadButton.id = 'detail-btn-upload';
-                uploadButton.className = 'py-3 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg';
-                uploadButton.textContent = 'Upload Score';
-                uploadButton.onclick = () => openUploadDialog(tournamentId, tournamentName);
-                joinButton.replaceWith(uploadButton);
-            }
-            // --- Fin de la actualización de la interfaz de usuario ---
+        <!-- HOMEWORK -->
+        <div id="homeworkScreen" class="screen">
+            <div class="fs-header"><i class="fa-solid fa-arrow-left" onclick="closeScreen('homeworkScreen')" style="padding:10px;"></i><span class="fs-title">Upload Homework</span></div>
+            <div class="form-section">
+                <div class="form-group"><label class="label">Subject (Locked)</label><input id="hw_subject" class="input" readonly style="background:#eee; color:#555;"></div>
+                <div class="flex-row">
+                    <div class="flex-col form-group"><label class="label">Class</label><select id="hw_class" class="input"><option>Nursery</option><option>LKG</option><option>UKG</option><option>I</option><option>II</option><option>III</option><option>IV</option><option>V</option><option>VI</option><option>VII</option><option>VIII</option><option>IX</option><option>X</option><option>XI</option><option>XII</option></select></div>
+                    <div class="flex-col form-group"><label class="label">Section</label><input id="hw_sec" class="input" placeholder="A"></div>
+                </div>
+                <div class="form-group"><label class="label">Title / Topic</label><input id="hw_title" class="input"></div>
+                <div class="form-group"><label class="label">Description</label><textarea id="hw_desc" class="input" rows="3"></textarea></div>
+                <div class="form-group"><label class="label">Image (Optional)</label><input type="file" id="hw_file" class="input" accept="image/*"></div>
+                <button class="btn btn-primary" onclick="uploadHomework()">Post Homework</button>
+                <p id="hw_loading" style="display:none; color:blue; text-align:center;">Uploading...</p>
+            </div>
+            <div class="form-section">
+                <h4>My Upload History</h4>
+                <div id="hwList"></div>
+            </div>
+        </div>
 
-        } catch (err) { alert(`Join Failed: ${err.message}`); } 
-        finally { hideLoader(); }
-    };
-  }
+        <!-- NOTICE -->
+        <div id="noticeScreen" class="screen">
+            <div class="fs-header"><i class="fa-solid fa-arrow-left" onclick="closeScreen('noticeScreen')" style="padding:10px;"></i><span class="fs-title">Send Notice</span></div>
+            <div class="form-section">
+                <div class="flex-row">
+                    <div class="flex-col form-group"><label class="label">Class</label><select id="nt_class" class="input"><option>All</option><option>Nursery</option><option>LKG</option><option>UKG</option><option>I</option><option>II</option><option>III</option><option>IV</option><option>V</option><option>VI</option><option>VII</option><option>VIII</option><option>IX</option><option>X</option><option>XI</option><option>XII</option></select></div>
+                    <div class="flex-col form-group"><label class="label">Section</label><input id="nt_sec" class="input" placeholder="A"></div>
+                </div>
+                <div class="form-group"><label class="label">Heading</label><input id="nt_head" class="input"></div>
+                <div class="form-group"><label class="label">Notice Content</label><textarea id="nt_desc" class="input" rows="3"></textarea></div>
+                <button class="btn btn-primary" onclick="sendNotice()">Send Notice</button>
+            </div>
+            <div class="form-section">
+                <h4>Notice History</h4>
+                <div id="noticeList"></div>
+            </div>
+        </div>
 
-  function openUploadDialog(tournamentId, tournamentName) {
-    const html = `
-      <h3 class="text-xl font-bold neon mb-4">Upload Score for ${tournamentName}</h3>
-      <p class="small-muted mb-3">Enter your kills, damage, and final rank.</p>
-      
-      <div class="mb-4 p-3 rounded-lg bg-red-900 bg-opacity-40 text-red-300">
-          <p class="font-bold">📝 Note (Important):</p>
-          <p class="text-sm mt-1">Please upload your original score only. Fake or edited results will be rejected. All scores are manually verified by the Winxx Team before leaderboard update. If any mismatch is found, the player may lose their entry fee or account access.</p>
-          <p class="font-bold mt-3">सावधान:</p>
-          <p class="text-sm mt-1">सिर्फ अपना असली स्कोर डालें। अगर स्कोर गलत या फेक पाया गया तो रिजल्ट कैंसल कर दिया जाएगा और वॉलेट अमाउंट भी डिडक्ट हो सकता है।</p>
-      </div>
+        <!-- LEAVE REQUESTS -->
+        <div id="leaveScreen" class="screen">
+            <div class="fs-header"><i class="fa-solid fa-arrow-left" onclick="closeScreen('leaveScreen')" style="padding:10px;"></i><span class="fs-title">Student Leaves</span></div>
+            <div class="form-section">
+                <h4>Pending Approvals</h4>
+                <div id="leaveList">Loading...</div>
+            </div>
+        </div>
 
-      <div class="space-y-3">
-        <input type="number" id="score-kills-input" placeholder="Kills" required class="w-full p-3 rounded-lg text-gray-900" />
-        <input type="number" id="score-damage-input" placeholder="Damage" required class="w-full p-3 rounded-lg text-gray-900" />
-        <input type="text" id="score-rank-input" placeholder="Rank (Optional)" class="w-full p-3 rounded-lg text-gray-900" />
-      </div>
-      <button id="upload-score-btn" class="w-full mt-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold">Upload Now</button>
-    `;
-    showModal(html);
-    
-    document.getElementById('upload-score-btn').onclick = async () => {
-        const killsInput = document.getElementById('score-kills-input');
-        const damageInput = document.getElementById('score-damage-input');
-        const rankInput = document.getElementById('score-rank-input');
+    </div>
 
-        const kills = parseInt(killsInput.value, 10);
-        const damage = parseInt(damageInput.value, 10);
-        const rank = rankInput.value.trim();
-
-        if (isNaN(kills) || isNaN(damage) || kills < 0 || damage < 0) {
-            return alert('Please enter valid numbers for Kills and Damage.');
-        }
-
-        closeModal();
-        showLoader();
-        try {
-            await addDoc(collection(db, 'scores'), {
-                userId: currentUser.uid,
-                userEmail: currentUser.email,
-                tournamentId: tournamentId,
-                kills: kills,
-                damage: damage,
-                rank: rank || 'Not provided',
-                createdAt: serverTimestamp()
-            });
-            alert('Score submitted successfully!');
-        } catch (err) {
-            alert(`Submission Failed: ${err.message}`);
-        } finally {
-            hideLoader();
-        }
-    };
-  }
-
-  document.getElementById('btn-add').addEventListener('click', () => {
-    const html = `
-      <h3 class="text-xl font-bold neon mb-4">Add Cash to Wallet</h3>
-      <div class="mb-4 p-3 rounded-lg bg-yellow-900 bg-opacity-40 text-yellow-300 text-center">
-        <p class="font-bold">Note: Wallet updates are verified by our team. It may take some time for the amount to reflect.</p>
-        <p class="font-bold mt-1">ध्यान दें: वॉलेट अपडेट हमारी टीम द्वारा सत्यापित होते हैं। राशि दिखने में कुछ समय लग सकता है।</p>
-      </div>
-      <div class="mb-4 p-4 card rounded-lg text-center">
-        <p class="small-muted">Scan QR or use UPI ID to pay:</p>
-        <img src="${ADMIN_QR_CODE_URL}" alt="UPI QR Code" class="mx-auto my-3 w-40 h-40 border rounded-md">
-        <p class="font-mono bg-black bg-opacity-30 p-2 rounded break-all">${ADMIN_UPI_ID}</p>
-      </div>
-      <p class="text-sm text-gray-400 mb-4">After paying, fill the form below to get the amount in your wallet.</p>
-      <form id="add-cash-form" class="space-y-3">
-          <input type="text" id="request-name" placeholder="Your Name" class="w-full p-3 rounded-lg text-gray-900" required>
-          <input type="number" id="request-amount" placeholder="Amount Sent (e.g., 100)" class="w-full p-3 rounded-lg text-gray-900" required>
-          <input type="time" id="request-time" class="w-full p-3 rounded-lg text-gray-900" required>
-          <input type="text" id="request-tx-id" placeholder="UPI Transaction ID (Optional)" class="w-full p-3 rounded-lg text-gray-900">
-          <p class="text-xs text-gray-400 -mt-2 mb-2 px-1">Note: Agr user transaction id dale ga to payment approved chance jyada hoge.</p>
-          <button type="submit" class="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold">Submit Request</button>
-      </form>`;
-    showModal(html);
-    document.getElementById('add-cash-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('request-name').value.trim();
-      const amount = parseFloat(document.getElementById('request-amount').value);
-      const time = document.getElementById('request-time').value;
-      const transactionId = document.getElementById('request-tx-id').value.trim();
-      
-      if (!currentUser || !name || isNaN(amount) || amount <= 0 || !time) {
-        return alert("Please enter valid name, amount, and time details.");
-      }
-      
-      closeModal(); 
-      showLoader();
-      
-      try {
-        const requestPayload = {
-          userId: currentUser.uid,
-          userEmail: currentUser.email,
-          name: name,
-          amount: amount,
-          paymentTime: time,
-          status: "pending",
-          createdAt: serverTimestamp()
+    <!-- JAVASCRIPT -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBAUi1RVGdA9x6oo8XQ2zSyoR8gn1eCc4c", 
+            authDomain: "coin-earn-app.firebaseapp.com",
+            projectId: "coin-earn-app",
+            storageBucket: "coin-earn-app.firebasestorage.app",
+            messagingSenderId: "583026903249",
+            appId: "1:583026903249:web:bb3653e1d159b2ce021df0"
         };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const storage = firebase.storage();
 
-        if (transactionId) {
-          requestPayload.transactionId = transactionId;
+        let currentTeacher = {};
+
+        // 1. AUTH LOGIC
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User Logged In
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                loadTeacherProfile(user.email);
+            } else {
+                // User Logged Out
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('main-app').style.display = 'none';
+            }
+        });
+
+        function handleLogin() {
+            const e = document.getElementById('login_email').value;
+            const p = document.getElementById('login_pass').value;
+            const msg = document.getElementById('login_msg');
+            
+            if(!e || !p) { msg.innerText = "Please fill email and password"; return; }
+            msg.innerText = "Verifying...";
+
+            auth.signInWithEmailAndPassword(e, p)
+                .catch(err => {
+                    msg.innerText = "Error: " + err.message;
+                });
         }
 
-        await addDoc(collection(db, "paymentRequests"), requestPayload);
-        alert("Request submitted! We will verify and update your wallet soon.");
-      } catch (err) { 
-        alert(`Request Failed: ${err.message}`); 
-      } finally { 
-        hideLoader(); 
-      }
-    });
-  });
-
-  document.getElementById('btn-history').addEventListener('click', async () => {
-    if (!currentUser) return alert("Please login first.");
-    showLoader();
-    try {
-        const paymentsQuery = query(
-            collection(db, 'paymentRequests'),
-            where('userId', '==', currentUser.uid),
-            orderBy('createdAt', 'desc')
-        );
-        const paymentDocs = await getDocs(paymentsQuery);
-
-        const withdrawalsQuery = query(
-            collection(db, 'withdrawals'),
-            where('userId', '==', currentUser.uid),
-            orderBy('timestamp', 'desc')
-        );
-        const withdrawalDocs = await getDocs(withdrawalsQuery);
-
-        const allTransactions = [];
-        paymentDocs.forEach(doc => {
-            const data = doc.data();
-            allTransactions.push({ type: 'payment', ...data, date: data.createdAt?.toDate() });
-        });
-        withdrawalDocs.forEach(doc => {
-            const data = doc.data();
-            allTransactions.push({ type: 'withdrawal', ...data, date: data.timestamp?.toDate() });
-        });
+        function logout() { auth.signOut(); location.reload(); }
         
-        allTransactions.sort((a, b) => (b.date || 0) - (a.date || 0));
+        window.openScreen = function(id) { 
+            document.getElementById(id).classList.add('active'); 
+            if(id==='homeworkScreen') loadHomeworkHistory(); 
+            if(id==='noticeScreen') loadNoticeHistory(); 
+            if(id==='leaveScreen') loadLeaves(); 
+            if(id==='profileScreen') renderProfile(); // Load Profile
+        }
+        window.closeScreen = function(id) { document.getElementById(id).classList.remove('active'); }
 
-        let historyHtml = '<div class="space-y-3 max-h-96 overflow-y-auto">';
-        if (allTransactions.length === 0) {
-            historyHtml += '<p class="small-muted">No transaction history found.</p>';
-        } else {
-            allTransactions.forEach(tx => {
-                if (tx.type === 'payment') {
-                    let statusColor = 'text-yellow-400';
-                    if (tx.status === 'approved') statusColor = 'text-green-400';
-                    if (tx.status === 'rejected') statusColor = 'text-red-400';
-                    historyHtml += `
-                        <div class="p-3 card rounded-lg flex justify-between items-center">
-                            <div><p class="font-semibold">Add Cash Request</p><p class="text-xs text-gray-400">${tx.date ? tx.date.toLocaleString() : 'No date'}</p></div>
-                            <div class="text-right"><p class="font-bold text-xl">₹${tx.amount}</p><p class="text-sm font-semibold ${statusColor}">${tx.status.toUpperCase()}</p></div>
-                        </div>`;
-                } else if (tx.type === 'withdrawal') {
-                    let statusColor = 'text-yellow-400';
-                    if (tx.status === 'completed') statusColor = 'text-green-400';
-                    if (tx.status === 'rejected') statusColor = 'text-red-400';
-                    historyHtml += `
-                        <div class="p-3 card rounded-lg flex justify-between items-center">
-                            <div><p class="font-semibold">Withdrawal Request</p><p class="text-xs text-gray-400">${tx.date ? tx.date.toLocaleString() : 'No date'}</p></div>
-                            <div class="text-right"><p class="font-bold text-xl text-red-400">- ₹${tx.amount}</p><p class="text-sm font-semibold ${statusColor}">${tx.status.toUpperCase()}</p></div>
-                        </div>`;
+        // 2. FETCH TEACHER SUBJECT (LOCKED)
+        function loadTeacherProfile(email) {
+            db.collection("staff").where("email", "==", email).get().then(snap => {
+                if (!snap.empty) {
+                    const data = snap.docs[0].data();
+                    currentTeacher = { id: snap.docs[0].id, ...data };
+                    
+                    document.getElementById('teacher_info').innerText = `${currentTeacher.name} | ${currentTeacher.subject}`;
+                    document.getElementById('hw_subject').value = currentTeacher.subject;
+                } else {
+                    document.getElementById('teacher_info').innerText = "Profile Not Linked";
+                    document.getElementById('hw_subject').value = "General";
+                    alert("Welcome! Your email is not linked to a Staff profile in Admin Panel yet. You can still use the app but Subject will be 'General'.");
                 }
             });
         }
-        historyHtml += '</div>';
-        showModal(`<h3 class="text-xl font-bold neon mb-4">Transaction History</h3>${historyHtml}`);
-    } catch (err) { 
-        console.error("History Error:", err);
-        alert(`History Error: ${err.message}`); 
-    } finally { 
-        hideLoader(); 
-    }
-  });
 
-  document.getElementById('btn-withdraw').addEventListener('click', () => {
-    const html = `
-      <h3 class="text-xl font-bold neon mb-4">Request Withdrawal</h3>
-      <div class="mb-4 p-3 rounded-lg bg-yellow-900 bg-opacity-40 text-yellow-300 text-center">
-        <p class="font-bold">Important: Withdrawals are processed by our team and may take 24-48 hours to be credited.</p>
-        <p class="font-bold mt-1">महत्वपूर्ण: निकासी हमारी टीम द्वारा प्रोसेस की जाती है और जमा होने में 24-48 घंटे लग सकते हैं।</p>
-      </div>
-      <input id="withdraw-amount" type="number" placeholder="Amount (e.g., 100)" class="w-full p-3 my-2 rounded-lg text-gray-900" />
-      <input id="withdraw-details" placeholder="Your UPI ID or Bank Details" class="w-full p-3 mb-3 rounded-lg text-gray-900" />
-      <button id="withdraw-submit" class="w-full py-3 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-black font-semibold">Submit Request</button>`;
-    showModal(html);
-    document.getElementById('withdraw-submit').onclick = async () => {
-      const amount = parseFloat(document.getElementById('withdraw-amount').value);
-      const details = document.getElementById('withdraw-details').value.trim();
-      if (!amount || amount <= 0 || !details) return alert('Please enter all details correctly.');
-      closeModal(); showLoader();
-      const userRef = doc(db, 'users', currentUser.uid);
-      try {
-        await runTransaction(db, async (tx) => {
-          const userDoc = await tx.get(userRef);
-          if (!userDoc.exists()) throw new Error("User data not found.");
-          const balance = userDoc.data().wallet || 0;
-          if (balance < amount) throw new Error("Insufficient balance.");
-          tx.update(userRef, { wallet: balance - amount });
-          await addDoc(collection(db, 'withdrawals'), { userId: currentUser.uid, userEmail: currentUser.email, amount, details, status: 'pending', timestamp: serverTimestamp() });
-        });
-        alert('Withdrawal request sent successfully!');
-      } catch (err) { alert(`Request Failed: ${err.message}`); } finally { hideLoader(); }
-    };
-  });
+        // NEW: RENDER PROFILE DETAILS
+        function renderProfile() {
+            document.getElementById('p_name').innerText = currentTeacher.name || "Unknown";
+            document.getElementById('p_sub').innerText = currentTeacher.subject || "General";
+            document.getElementById('p_email').innerText = currentTeacher.email || auth.currentUser.email;
+            document.getElementById('p_mob').innerText = currentTeacher.mobile || "-";
+            document.getElementById('p_dob').innerText = currentTeacher.dob || "-";
+            document.getElementById('p_addr').innerText = currentTeacher.address || "-";
+            document.getElementById('p_aadhaar').innerText = currentTeacher.aadhaar || "-";
+        }
 
-  document.getElementById('quick-join').addEventListener('click', () => { document.getElementById('tournaments-list').scrollIntoView({ behavior: 'smooth' }); });
-  modal.addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
-  document.getElementById('modal-close-btn').addEventListener('click', closeModal);
-</script>
+        // 3. UPLOAD HOMEWORK
+        async function uploadHomework() {
+            const cls = document.getElementById('hw_class').value;
+            const sec = document.getElementById('hw_sec').value;
+            const title = document.getElementById('hw_title').value;
+            const desc = document.getElementById('hw_desc').value;
+            const file = document.getElementById('hw_file').files[0];
+            const subj = document.getElementById('hw_subject').value;
 
+            if(!cls || !title || !desc) return alert("Please fill all fields");
+
+            document.getElementById('hw_loading').style.display = 'block';
+            let imgUrl = "";
+
+            if(file) {
+                const ref = storage.ref('homework/' + Date.now() + '-' + file.name);
+                await ref.put(file);
+                imgUrl = await ref.getDownloadURL();
+            }
+
+            db.collection("academics").add({
+                type: "Homework",
+                class: cls,
+                section: sec,
+                subject: subj, // Auto-filled
+                title: title,
+                desc: desc,
+                image: imgUrl,
+                date: new Date().toISOString().split('T')[0],
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                teacherEmail: auth.currentUser.email
+            }).then(() => {
+                alert("Homework Uploaded!");
+                document.getElementById('hw_loading').style.display = 'none';
+                document.getElementById('hw_title').value = "";
+                document.getElementById('hw_desc').value = "";
+                loadHomeworkHistory();
+            });
+        }
+
+        function loadHomeworkHistory() {
+            db.collection("academics")
+              .where("teacherEmail", "==", auth.currentUser.email)
+              .get().then(snap => {
+                  let h = '';
+                  snap.forEach(doc => {
+                      const d = doc.data();
+                      h += `<div class="manage-item">
+                          <div><b>${d.class}-${d.section}: ${d.title}</b><br><small>${d.date}</small></div>
+                          <i class="fa-solid fa-trash" style="color:red" onclick="deleteDoc('academics','${doc.id}')"></i>
+                      </div>`;
+                  });
+                  document.getElementById('hwList').innerHTML = h || '<p style="text-align:center">No uploads yet</p>';
+              });
+        }
+
+        // 4. SEND NOTICE
+        function sendNotice() {
+            const cls = document.getElementById('nt_class').value;
+            const sec = document.getElementById('nt_sec').value;
+            const head = document.getElementById('nt_head').value;
+            const desc = document.getElementById('nt_desc').value;
+            const subj = document.getElementById('hw_subject').value;
+
+            if(!head || !desc) return alert("Fill details");
+
+            db.collection("notices").add({
+                headline: head + ` (${subj})`,
+                details: desc,
+                class: cls,
+                section: sec,
+                date: new Date().toISOString().split('T')[0],
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                teacherEmail: auth.currentUser.email
+            }).then(() => {
+                alert("Notice Sent!");
+                document.getElementById('nt_head').value = "";
+                document.getElementById('nt_desc').value = "";
+                loadNoticeHistory();
+            });
+        }
+
+        function loadNoticeHistory() {
+            db.collection("notices")
+              .where("teacherEmail", "==", auth.currentUser.email)
+              .get().then(snap => {
+                  let h = '';
+                  snap.forEach(doc => {
+                      const d = doc.data();
+                      h += `<div class="manage-item">
+                          <div><b>${d.headline}</b><br><small>${d.class} ${d.section || ''}</small></div>
+                          <i class="fa-solid fa-trash" style="color:red" onclick="deleteDoc('notices','${doc.id}')"></i>
+                      </div>`;
+                  });
+                  document.getElementById('noticeList').innerHTML = h || '<p style="text-align:center">No notices sent</p>';
+              });
+        }
+
+        // 5. MANAGE LEAVES
+        function loadLeaves() {
+            document.getElementById('leaveList').innerHTML = 'Loading...';
+            // Show all pending leaves
+            db.collection("requests")
+              .where("type", "==", "Leave")
+              .where("status", "==", "Pending")
+              .get().then(snap => {
+                  let h = '';
+                  snap.forEach(doc => {
+                      const r = doc.data();
+                      h += `<div class="manage-item" style="flex-direction:column; align-items:flex-start;">
+                          <div style="width:100%; display:flex; justify-content:space-between;">
+                              <b>${r.name}</b> <small>${r.class}-${r.section}</small>
+                          </div>
+                          <div style="font-size:12px; margin:5px 0; color:#555;">${r.detail}</div>
+                          <div style="width:100%; display:flex; gap:10px; margin-top:5px;">
+                              <button class="btn" style="background:var(--success); color:white; padding:5px;" onclick="updateLeave('${doc.id}', 'Approved')">Approve</button>
+                              <button class="btn" style="background:var(--danger); color:white; padding:5px;" onclick="updateLeave('${doc.id}', 'Rejected')">Reject</button>
+                          </div>
+                      </div>`;
+                  });
+                  document.getElementById('leaveList').innerHTML = h || '<p style="text-align:center">No pending requests</p>';
+              });
+        }
+
+        function updateLeave(id, status) {
+            db.collection("requests").doc(id).update({ status: status, actionBy: currentTeacher.name })
+              .then(() => { loadLeaves(); });
+        }
+
+        function deleteDoc(col, id) {
+            if(confirm("Delete this item?")) {
+                db.collection(col).doc(id).delete().then(() => {
+                    if(col === 'academics') loadHomeworkHistory();
+                    if(col === 'notices') loadNoticeHistory();
+                });
+            }
+        }
+    </script>
 </body>
 </html>
